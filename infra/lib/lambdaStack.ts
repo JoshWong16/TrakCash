@@ -57,7 +57,7 @@ export class LambdaStack extends cdk.Stack {
     props.categoriesTable.grantReadData(categorizeLambda);
 
     categorizeLambda.addEventSource(new lambdaEventSources.SqsEventSource(props.transactionQueue, {
-      batchSize: 10, // Process up to 10 messages at once
+      batchSize: 10, 
     }));
 
     new cdk.CfnOutput(this, 'CategorizeLambdaName', {

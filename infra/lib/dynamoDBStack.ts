@@ -12,7 +12,6 @@ export class DynamoDBStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: DynamoDBStackProps) {
     super(scope, id, props);
 
-    // Create DynamoDB table for transactions
     this.transactionsTable = new dynamodb.Table(this, 'TransactionsTable', {
       tableName: 'trakcash-transactions',
       partitionKey: {
@@ -27,21 +26,18 @@ export class DynamoDBStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
-    // Add GSI for querying by status
     this.transactionsTable.addGlobalSecondaryIndex({
       indexName: 'StatusIndex',
       partitionKey: { name: 'nonTerminalStatus', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'transactionDateId', type: dynamodb.AttributeType.STRING },
     });
 
-    // Add GSI for pending validation
     this.transactionsTable.addGlobalSecondaryIndex({
       indexName: 'PendingValidationIndex',
       partitionKey: { name: 'pendingValidation', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'transactionDateId', type: dynamodb.AttributeType.STRING },
     });
 
-    // Create DynamoDB table for user categories
     this.categoriesTable = new dynamodb.Table(this, 'CategoriesTable', {
       tableName: 'trakcash-categories',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
@@ -49,7 +45,6 @@ export class DynamoDBStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // For development only
     });
 
-    // Output the table names
     new cdk.CfnOutput(this, 'TransactionsTableName', {
       value: this.transactionsTable.tableName,
       description: 'The name of the DynamoDB table for transactions',

@@ -7,7 +7,6 @@ import { S3Stack } from './s3Stack';
 
 const app = new cdk.App();
 
-// Create stacks
 const s3Stack = new S3Stack(app, 'S3Stack', {});
 const dynamoDBStack = new DynamoDBStack(app, 'DynamoDBStack', {});
 const lambdaStack = new LambdaStack(app, 'LambdaStack', {
