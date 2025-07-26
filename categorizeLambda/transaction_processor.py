@@ -16,7 +16,7 @@ class TransactionProcessor:
         self.TRANSACTIONS_TABLE = os.environ.get('TRANSACTIONS_TABLE', 'trakcash-transactions')
         self.CATEGORIES_TABLE = os.environ.get('CATEGORIES_TABLE', 'trakcash-categories')
         self.TRANSACTION_BUCKET = os.environ.get('TRANSACTION_BUCKET', 'trakcash-transaction-uploads')
-        self.BEDROCK_MODEL_ID = os.environ.get('BEDROCK_MODEL_ID', 'anthropic.claude-3-sonnet-20240229-v1:0')
+        self.BEDROCK_MODEL_ID = os.environ.get('BEDROCK_MODEL_ID', 'anthropic.claude-3-haiku-20240307-v1:0')
         
         self.transactions_table = self.dynamodb.Table(self.TRANSACTIONS_TABLE)
         self.categories_table = self.dynamodb.Table(self.CATEGORIES_TABLE)
@@ -39,15 +39,11 @@ class TransactionProcessor:
             
             print(f"Found {len(transactions)} transactions in CSV file")
             
-            self.batch_write_transactions(transactions, user_id)
+            transactions_with_ids = self.batch_write_transactions(transactions, user_id)
             
             categories = self.get_user_categories(user_id)
             
-            if not categories:
-                print(f"No categories found for user {user_id}")
-                return
-            
-            # categorized_transactions = self.categorize_transactions(transactions, categories)
+            categorized_transactions = self.categorize_transactions(transactions_with_ids, categories)
             
             # self.update_transactions_with_categories(categorized_transactions, user_id)
             
@@ -56,9 +52,11 @@ class TransactionProcessor:
             print(f"Error processing CSV file: {str(e)}")
             raise
 
-    def batch_write_transactions(self, transactions: List[Dict[str, Any]], user_id: str):
+    def batch_write_transactions(self, transactions: List[Dict[str, Any]], user_id: str) -> List[Dict[str, Any]]:
         try:
             print(f"Writing {len(transactions)} transactions to DynamoDB")
+            
+            transactions_with_ids = []
         
             with self.transactions_table.batch_writer() as batch:
                 for transaction in transactions:
@@ -77,36 +75,53 @@ class TransactionProcessor:
                     }
                     
                     batch.put_item(Item=item)
+                    
+                    # Add transaction_id to the original transaction data
+                    transaction_with_id = transaction.copy()
+                    transaction_with_id['transaction_id'] = transaction_id
+                    transactions_with_ids.append(transaction_with_id)
             
             print(f"Successfully wrote {len(transactions)} transactions to DynamoDB")
+            return transactions_with_ids
         except Exception as e:
             print(f"Error writing transactions to DynamoDB: {str(e)}")
             raise
 
-    def get_user_categories(self, user_id: str) -> List[str]:
+    def get_user_categories(self, user_id: str) -> str:
         try:
             print(f"Getting categories for user {user_id}")
             
             response = self.categories_table.get_item(Key={'userId': user_id})
             
             categories = response.get('Item', {}).get('categories', [])
-            
             if not categories:
-                categories = [
-                    "Housing", "Transportation", "Food", "Utilities", 
-                    "Insurance", "Healthcare", "Savings", "Personal", 
-                    "Entertainment", "Miscellaneous"
-                ]
+                raise ValueError(f"No categories found for user {user_id}. User must set up categories before processing transactions.")
             
             print(f"Found {len(categories)} categories for user {user_id}")
-            return categories
+            
+            # Convert flattened categories to readable format
+            category_groups = {}
+            for item in categories:
+                category = item['category']
+                subcategory = item['subcategory']
+                
+                if category not in category_groups:
+                    category_groups[category] = []
+                category_groups[category].append(subcategory)
+            
+            # Format for LLM
+            formatted_categories = ""
+            for category, subcategories in category_groups.items():
+                formatted_categories += f"\n{category}:\n"
+                for subcategory in subcategories:
+                    formatted_categories += f"  - {subcategory}\n"
+            
+            print(f"Formatted categories:\n{formatted_categories}")
+            return formatted_categories.strip()
+            
         except Exception as e:
             print(f"Error getting categories for user {user_id}: {str(e)}")
-            return [
-                "Housing", "Transportation", "Food", "Utilities", 
-                "Insurance", "Healthcare", "Savings", "Personal", 
-                "Entertainment", "Miscellaneous"
-            ]
+            raise
 
     def categorize_transactions(self, transactions: List[Dict[str, Any]], categories: List[str]) -> List[Dict[str, Any]]:
         return self.bedrock_categorizer.categorize_transactions(transactions, categories)

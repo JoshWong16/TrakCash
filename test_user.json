@@ -1,0 +1,95 @@
+{
+  "userId": {
+    "S": "user_josh"
+  },
+  "categories": {
+    "M": {
+      "Entertainment": {
+        "L": [
+          {
+            "S": "Subscriptions"
+          },
+          {
+            "S": "Concerts and Events"
+          },
+          {
+            "S": "Sports"
+          }
+        ]
+      },
+      "Food": {
+        "L": [
+          {
+            "S": "Groceries"
+          },
+          {
+            "S": "Coffee"
+          },
+          {
+            "S": "Dine out with others"
+          },
+          {
+            "S": "Dine out alone"
+          }
+        ]
+      },
+      "Selfcare": {
+        "L": [
+          {
+            "S": "Skincare"
+          },
+          {
+            "S": "Haircut"
+          },
+          {
+            "S": "Over the counter"
+          },
+          {
+            "S": "Laundry"
+          },
+          {
+            "S": "Gym"
+          },
+          {
+            "S": "Appointments"
+          }
+        ]
+      },
+      "Shopping": {
+        "L": [
+          {
+            "S": "Clothes"
+          },
+          {
+            "S": "Electronics"
+          },
+          {
+            "S": "Miscellaneous"
+          },
+          {
+            "S": "Gifts"
+          }
+        ]
+      },
+      "Transportation": {
+        "L": [
+          {
+            "S": "Evo"
+          },
+          {
+            "S": "Uber"
+          },
+          {
+            "S": "Gas "
+          },
+          {
+            "S": "Parking"
+          },
+          {
+            "S": "Public Transit"
+          }
+        ]
+      }
+    }
+  }
+}

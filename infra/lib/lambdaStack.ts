@@ -47,7 +47,7 @@ export class LambdaStack extends cdk.Stack {
         TRANSACTIONS_TABLE: props.transactionsTable.tableName,
         CATEGORIES_TABLE: props.categoriesTable.tableName,
         TRANSACTION_BUCKET: props.transactionBucket.bucketName,
-        BEDROCK_MODEL_ID: 'anthropic.claude-3-sonnet-20240229-v1:0',
+        BEDROCK_MODEL_ID: 'anthropic.claude-3-haiku-20240307-v1:0',
       },
       role: lambdaExecutionRole,
     });

@@ -1,8 +1,8 @@
 import json
-from transaction_processor import TransactionProcessor
+from usecases import ProcessTransactionsUsecase
 
-# Initialize the transaction processor
-processor = TransactionProcessor()
+# Initialize the use case
+process_transactions = ProcessTransactionsUsecase()
 
 def handler(event, context):
     """
@@ -31,7 +31,7 @@ def handler(event, context):
                 
                 user_id = key.split('/')[0] if '/' in key else 'unknown'
                 
-                processor.process_csv_file(bucket, key, user_id)
+                process_transactions.execute(bucket, key, user_id)
         
         return {
             'statusCode': 200,
